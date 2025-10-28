@@ -152,3 +152,12 @@ exit
 ```bash
 docker compose down 
 ```
+
+### Improvements to do 
+As it is a first approach it could work better:
+* Improve performance responce
+* Improve chunking strategi
+* Add keyword search
+* Add historical chat data an user identification 
+* Improve error handling
+
