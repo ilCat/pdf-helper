@@ -1,14 +1,19 @@
 import pymupdf
 import chromadb
 import os
+from dotenv import load_dotenv
 import pymupdf4llm
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+load_dotenv()
 
 
 class EmbedEngine:
     def __init__(self, name):
         self.name = name
-        self.client = chromadb.Client()
+        self.client = chromadb.HttpClient(
+            host=os.environ.get("DB_HOST"), port=os.environ.get("DB_PORT")
+        )
         self.db = self.client.get_or_create_collection(
             name=self.name,
             configuration={"hnsw": {"space": "cosine", "ef_construction": 100}},
@@ -20,7 +25,7 @@ class EmbedEngine:
         idx = []
 
         for name in os.listdir(dir):
-            print(f"Content of '{name}'")
+            print(f"Loading content of '{name}'")
             pdf = pymupdf4llm.to_markdown(os.path.join(dir, name))
 
             text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(

@@ -1,35 +1,38 @@
-import os
-from ollama import Client
+import typer
+from llm import llm_call
 from embed import EmbedEngine
 
 
-client = Client(
-    host="https://ollama.com",
-    headers={"Authorization": "Bearer " + os.environ.get("OLLAMA_API_KEY")},
-)
+ee = EmbedEngine(name="research_papers")
+
+app = typer.Typer()
 
 
-ee = EmbedEngine(name="myCollection")
-
-SYSTEM_MESSAGE = """
-You are a helpful assistant that answers questions about research papers.
-You must use the data set to answer the questions,
-you should not provide any info that is not in the provided sources.
-Cite the sources you used to answer the question inside square brackets.
-The sources are in the format: <id>: <text>.
-"""
-user_question = "Are ther advances in UI automation"
+@app.command()
+def update_db():
+    ee.load_docs("research_papers")
+    print("Succesfull update")
 
 
-ee.load_docs("research_papers")
-context = ee.get_context("Are ther advances in UI automation", 3)
+@app.command()
+def exit():
+    print("\nBye")
 
 
-messages = [
-    {"role": "system", "content": SYSTEM_MESSAGE},
-    {"role": "user", "content": f"{user_question}\nSources: {context}"},
-]
+@app.command()
+def make_question():
+    user_question = typer.prompt("What's your question about the papers?")
+    context = ee.get_context(user_question, 2)
+    llm_call(user_question, context)
 
 
-for part in client.chat("qwen3-coder:480b-cloud", messages=messages, stream=True):
-    print(part["message"]["content"], end="", flush=True)
+@app.callback()
+def callback():
+    """
+    Welcome! I'm a Q&A system to help undestand PDfs content"
+
+    """
+
+
+if __name__ == "__main__":
+    app()

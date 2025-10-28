@@ -11,4 +11,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 EXPOSE 8080
-CMD ["python3" , "main.py"]
+
+# To keep alive the container  
+CMD ["tail", "-f","/dev/null"]
