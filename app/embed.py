@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import pymupdf4llm
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from rich.progress import track
 
 load_dotenv()
 
@@ -24,20 +25,25 @@ class EmbedEngine:
         meta_data = []
         idx = []
 
-        for name in os.listdir(dir):
-            print(f"Loading content of '{name}'")
+        for name in track(os.listdir(dir), description="Loading..."):
+            print(f"Processing content of '{name}'")
             pdf = pymupdf4llm.to_markdown(os.path.join(dir, name))
 
             text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=500, chunk_overlap=125
             )
             texts = text_splitter.create_documents([pdf])
+            loaded_ids = self.db.get()["ids"]
             for i, text in enumerate(texts):
-                idx.append(str(hash(name + str(i + 1))))
-                content.append(text.page_content)
-                meta_data.append({"book": name, "section": str(i + 1)})
-
-        self.db.upsert(ids=idx, documents=content, metadatas=meta_data)
+                id = name + str(i + 1)
+                if id not in loaded_ids:
+                    idx.append(id)
+                    content.append(text.page_content)
+                    meta_data.append({"book": name, "section": str(i + 1)})
+        if len(idx) > 0:
+            self.db.upsert(ids=idx, documents=content, metadatas=meta_data)
+        else:
+            print("All data is already in the db. Nothing to update")
 
     def __response_map(self, data):
         response = {}

@@ -5,10 +5,8 @@ services:
       - chroma_data:/data
     ports:
       - "8000:8000"
-    expose:
-      - 8000
-    # networks:
-    #   - internal
+    # expose:
+    #   - 8000
 
   app:
     build: .
@@ -16,17 +14,12 @@ services:
     depends_on:
       - db
     volumes: 
-      - ./:/src
+      - ./app:/app
     ports:
       - "8080:8080"
     stdin_open: true 
     tty: true        
     restart: on-failure
-    # networks:
-    #   - internal
-
-# networks:
-#   internal:
 
 volumes:
   chroma_data:
