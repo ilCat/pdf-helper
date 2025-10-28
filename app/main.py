@@ -2,9 +2,12 @@ import typer
 from llm import llm_call
 from embed import EmbedEngine
 from datetime import datetime
+from service import check_services
 
+check_services()
 
 ee = EmbedEngine(name="research_papers")
+
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -13,11 +16,6 @@ app = typer.Typer(pretty_exceptions_show_locals=False)
 def update_db():
     ee.load_docs("research_papers")
     print("Succesfull update")
-
-
-def exit():
-    print("\nBye")
-    return False
 
 
 @app.command()

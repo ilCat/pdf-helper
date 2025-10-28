@@ -25,21 +25,26 @@ class EmbedEngine:
         meta_data = []
         idx = []
 
-        for name in track(os.listdir(dir), description="Loading..."):
-            print(f"Processing content of '{name}'")
-            pdf = pymupdf4llm.to_markdown(os.path.join(dir, name))
+        try:
+            for name in track(os.listdir(dir), description="Loading..."):
+                print(f"Processing content of '{name}'")
+                pdf = pymupdf4llm.to_markdown(os.path.join(dir, name))
 
-            text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-                chunk_size=500, chunk_overlap=125
+                text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                    chunk_size=500, chunk_overlap=125
+                )
+                texts = text_splitter.create_documents([pdf])
+                loaded_ids = self.db.get()["ids"]
+                for i, text in enumerate(texts):
+                    id = name + str(i + 1)
+                    if id not in loaded_ids:
+                        idx.append(id)
+                        content.append(text.page_content)
+                        meta_data.append({"book": name, "section": str(i + 1)})
+        except:
+            raise TypeError(
+                f"There is a problem with the folder {dir}, check if not exist or is empty"
             )
-            texts = text_splitter.create_documents([pdf])
-            loaded_ids = self.db.get()["ids"]
-            for i, text in enumerate(texts):
-                id = name + str(i + 1)
-                if id not in loaded_ids:
-                    idx.append(id)
-                    content.append(text.page_content)
-                    meta_data.append({"book": name, "section": str(i + 1)})
         if len(idx) > 0:
             self.db.upsert(ids=idx, documents=content, metadatas=meta_data)
         else:
@@ -55,6 +60,9 @@ class EmbedEngine:
         return response
 
     def get_context(self, context, num_results):
-        resp = self.db.query(query_texts=[context], n_results=num_results)
+        try:
+            resp = self.db.query(query_texts=[context], n_results=num_results)
 
-        return self.__response_map(resp)
+            return self.__response_map(resp)
+        except:
+            raise TypeError(f"Error to connect to DB, check HOST and PORT values")
