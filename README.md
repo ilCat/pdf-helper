@@ -89,6 +89,7 @@ This will:
 * Start the Python app container with all dependencies installed
 
 ### How to run the application
+0. Create a '.env' file using the '.env.example' content plus your OLLAMA_API_KEY
 1. Build and run containers
 ```bash
 docker-compose up --build -d
