@@ -1,5 +1,6 @@
 services:
   db:
+    container_name: pdf-helper-db
     image: chromadb/chroma
     volumes:
       - chroma_data:/data
@@ -9,6 +10,7 @@ services:
     #   - 8000
 
   app:
+    container_name: pdf-helper-app
     build: .
     env_file: .env
     depends_on:
