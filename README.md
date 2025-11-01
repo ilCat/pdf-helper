@@ -34,7 +34,7 @@ The Python container runs the CLI and communicates with:
 
    - Ollama API (for Qwen3 embeddings and answer generation)
 
-Add image
+![Architecture](media/arch.png)
 
 ### Assumptions and design decisions
 | Component            | Choice                           | Rationale                                                                                   |
